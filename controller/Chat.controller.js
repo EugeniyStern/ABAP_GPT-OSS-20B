@@ -29,7 +29,6 @@ sap.ui.define([
                     // Модель не содержит массива messages
                 }
             }
-            
         },
 
         onAfterRendering: function() {
@@ -43,6 +42,9 @@ sap.ui.define([
                     }
                 }.bind(this));
             }
+            
+            // Прокручиваем к последнему сообщению при первой загрузке
+            this._scrollToBottom();
         },
 
         onActionPressed: function(oEvent) {
@@ -50,6 +52,11 @@ sap.ui.define([
             var sKey = oAction.getKey();
             var sText = oAction.getText();
             sap.m.MessageToast.show("Нажата кнопка: " + sText + " (Key: " + sKey + ")");
+        },
+
+        onMessageListUpdateFinished: function() {
+            // Автоматически прокручиваем вниз после обновления списка сообщений
+            this._scrollToBottom();
         },
 
         onSendMessage: function() {
@@ -70,17 +77,32 @@ sap.ui.define([
                 timestamp: new Date().toLocaleString("ru-RU"),
                 icon: "sap-icon://user",
                 Actions: [
-                    { Text: "Action 1", Key: "action1" },
-                    { Text: "Action 2", Key: "action2" }
+                    { Text: "Action 1", Key: "action1" }
                 ]
             };
             
             aMessages.push(oNewMessage);
             oModel.setData({ messages: aMessages });
-            oModel.refresh();
+            oModel.refresh(true);
             
+            // Очищаем поле ввода
             oInput.setValue("");
-            sap.m.MessageToast.show("Сообщение отправлено");
+            
+            // Прокручиваем к последнему сообщению
+            setTimeout(function() {
+                this._scrollToBottom();
+            }.bind(this), 100);
+        },
+
+        _scrollToBottom: function() {
+            var oScrollContainer = this.byId("scrollContainer");
+            if (oScrollContainer) {
+                var oDomRef = oScrollContainer.getDomRef();
+                if (oDomRef) {
+                    // Прокручиваем к нижней части ScrollContainer
+                    oDomRef.scrollTop = oDomRef.scrollHeight;
+                }
+            }
         }
     });
 });
