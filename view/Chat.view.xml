@@ -5,13 +5,13 @@
     xmlns="sap.m">
 
     <l:VerticalLayout
+        id="verticalLayout"
         class="sapUiContentPadding"
         width="100%">
 
         <l:content>
             <ScrollContainer
                 id="scrollContainer"
-                height="300px"
                 width="100%"
                 vertical="true"
                 focusable="true">

@@ -41,10 +41,43 @@ sap.ui.define([
                         this.onSendMessage();
                     }
                 }.bind(this));
+                
+                // Пересчитываем высоту при изменении размера TextArea
+                oTextArea.attachLiveChange(function() {
+                    setTimeout(function() {
+                        this._calculateAndSetHeight();
+                    }.bind(this), 50);
+                }.bind(this));
+            }
+            
+            // Вычисляем и устанавливаем высоту ScrollContainer
+            this._calculateAndSetHeight();
+            
+            // Добавляем обработчик изменения размера окна с debounce
+            var oResizeTimeout;
+            var fnResizeHandler = function() {
+                clearTimeout(oResizeTimeout);
+                oResizeTimeout = setTimeout(function() {
+                    this._calculateAndSetHeight();
+                }.bind(this), 150);
+            }.bind(this);
+            
+            if (window.ResizeObserver) {
+                var oView = this.getView();
+                var oViewDomRef = oView.getDomRef();
+                if (oViewDomRef) {
+                    this._oResizeObserver = new ResizeObserver(fnResizeHandler);
+                    this._oResizeObserver.observe(oViewDomRef);
+                }
+            } else {
+                // Fallback для старых браузеров
+                jQuery(window).on("resize", fnResizeHandler);
             }
             
             // Прокручиваем к последнему сообщению при первой загрузке
-            this._scrollToBottom();
+            setTimeout(function() {
+                this._scrollToBottom();
+            }.bind(this), 100);
         },
 
         onActionPressed: function(oEvent) {
@@ -88,10 +121,60 @@ sap.ui.define([
             // Очищаем поле ввода
             oInput.setValue("");
             
-            // Прокручиваем к последнему сообщению
+            // Пересчитываем высоту после очистки TextArea
             setTimeout(function() {
+                this._calculateAndSetHeight();
                 this._scrollToBottom();
             }.bind(this), 100);
+        },
+
+        _calculateAndSetHeight: function() {
+            var oView = this.getView();
+            var oViewDomRef = oView.getDomRef();
+            var oScrollContainer = this.byId("scrollContainer");
+            var oToolbar = this.byId("messageInput") ? this.byId("messageInput").getParent() : null;
+            
+            if (!oViewDomRef || !oScrollContainer || !oToolbar) {
+                return;
+            }
+            
+            // Получаем доступную высоту view или окна
+            var iAvailableHeight = oViewDomRef.clientHeight;
+            if (!iAvailableHeight || iAvailableHeight === 0) {
+                iAvailableHeight = window.innerHeight;
+            }
+            
+            // Устанавливаем высоту view на 100vh, если она еще не установлена
+            if (!oViewDomRef.style.height || oViewDomRef.style.height === "") {
+                jQuery(oViewDomRef).css("height", "100vh");
+            }
+            
+            // Получаем высоту Toolbar с TextArea
+            var oToolbarDomRef = oToolbar.getDomRef();
+            var iToolbarHeight = 0;
+            if (oToolbarDomRef) {
+                iToolbarHeight = oToolbarDomRef.offsetHeight;
+            }
+            
+            // Получаем отступы VerticalLayout (sapUiContentPadding)
+            var oVerticalLayout = this.byId("verticalLayout");
+            var iPadding = 0;
+            if (oVerticalLayout) {
+                var oVerticalLayoutDomRef = oVerticalLayout.getDomRef();
+                if (oVerticalLayoutDomRef) {
+                    var oStyles = window.getComputedStyle(oVerticalLayoutDomRef);
+                    iPadding = parseInt(oStyles.paddingTop || 0, 10) + parseInt(oStyles.paddingBottom || 0, 10);
+                }
+            }
+            
+            // Вычисляем высоту для ScrollContainer
+            // Доступная высота минус высота Toolbar и отступы
+            var iScrollContainerHeight = iAvailableHeight - iToolbarHeight - iPadding;
+            
+            // Устанавливаем высоту в пикселях
+            if (iScrollContainerHeight > 0) {
+                oScrollContainer.setHeight(iScrollContainerHeight + "px");
+            }
         },
 
         _scrollToBottom: function() {
@@ -103,6 +186,15 @@ sap.ui.define([
                     oDomRef.scrollTop = oDomRef.scrollHeight;
                 }
             }
+        },
+
+        onExit: function() {
+            // Очищаем обработчики при уничтожении контроллера
+            if (this._oResizeObserver) {
+                this._oResizeObserver.disconnect();
+                this._oResizeObserver = null;
+            }
+            jQuery(window).off("resize", this._calculateAndSetHeight);
         }
     });
 });
