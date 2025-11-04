@@ -1,0 +1,16 @@
+			<List
+				headerText="Feed Entries"
+				items="{/EntryCollection}" >
+				<FeedListItem
+					sender="{Author}"
+					icon="{AuthorPicUrl}"
+					senderPress="onPress"
+					iconPress="onPress"
+					info="{Type}"
+					timestamp="{Date}"
+					text="{Text}"
+					convertLinksToAnchorTags="All"
+					actions="{path: 'Actions', templateShareable: false}">
+					<FeedListItemAction text="{Text}" icon="{Icon}" key="{Key}" press="onActionPressed" />
+				</FeedListItem>
+			</List>

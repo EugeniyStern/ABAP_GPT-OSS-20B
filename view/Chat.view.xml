@@ -1,0 +1,40 @@
+<mvc:View
+    controllerName="com.example.chat.controller.Chat"
+    xmlns:l="sap.ui.layout"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <l:VerticalLayout
+        class="sapUiContentPadding"
+        width="100%">
+        <l:content>
+            <List id="messageFeed"
+                items="{messages>/messages}"
+                headerText="Messages">
+                <FeedListItem
+                    sender="{messages>sender}"
+                    timestamp="{messages>timestamp}"
+                    text="{messages>text}"
+                    icon="{messages>icon}"
+                    convertLinksToAnchorTags="All"
+                    actions="{path: 'messages>Actions', templateShareable: false}">
+                    <FeedListItemAction text="{messages>Text}" key="{messages>Key}"
+                        press="onActionPressed" />
+                </FeedListItem>
+            </List>
+            <Toolbar height="100%">
+                <TextArea 
+                    id="messageInput" 
+                    placeholder="Введите сообщение..."
+                    width="100%"
+                    rows="4"
+                    growing="true"
+                    growingMaxLines="8"/>
+                <Button 
+                    icon="sap-icon://paper-plane" 
+                    press="onSendMessage" 
+                    type="Emphasized"
+                    tooltip="Отправить сообщение"/>
+            </Toolbar>
+        </l:content>
+    </l:VerticalLayout>
+</mvc:View>

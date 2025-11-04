@@ -1,0 +1,20 @@
+# Please write commit messages in English only
+#
+# <type>: <subject>
+#
+# <body>
+#
+# <footer>
+#
+# Types: feat, fix, docs, style, refactor, test, chore
+# Subject: Short summary (50 chars or less)
+# Body: Detailed explanation (wrap at 72 chars)
+# Footer: Breaking changes or issue references
+#
+# Example:
+# feat: add user authentication
+#
+# Implement login and registration functionality with JWT tokens.
+# Add password hashing using bcrypt.
+#
+# Closes #123

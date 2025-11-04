@@ -1,0 +1,43 @@
+{
+    "_version": "1.54.0",
+    "sap.app": {
+        "id": "com.example.chat",
+        "type": "application",
+        "i18n": "",
+        "title": "Chat Application",
+        "description": "Простое приложение чата на SAPUI5"
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "dependencies": {
+            "minUI5Version": "1.54.0",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {},
+                "sap.ui.layout": {}
+            }
+        },
+        "rootView": {
+            "viewName": "com.example.chat.view.Chat",
+            "type": "XML",
+            "async": true
+        },
+        "models": {}
+    }
+}
+

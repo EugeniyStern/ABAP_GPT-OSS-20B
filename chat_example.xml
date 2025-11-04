@@ -1,0 +1,25 @@
+<mvc:View controllerName="your.namespace.chat.controller.Chat" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+    <Page title="Chat">
+        <content>
+            <Feed id="messageFeed" items="{/messages}">
+                <items>
+                    <FeedListItem
+                        sender="{sender}"
+                        text="{text}"
+                        timestamp="{timestamp}">
+                        <FeedContent>
+                            <Button text="Action 1" press="onButtonPress" class="sapUiTinyMargin"/>
+                            <Button text="Action 2" press="onButtonPress" class="sapUiTinyMargin"/>
+                        </FeedContent>
+                    </FeedListItem>
+                </items>
+            </Feed>
+        </content>
+        <footer>
+            <Toolbar>
+                <Input id="messageInput" placeholder="Type a message..." width="100%"/>
+                <Button icon="sap-icon://paper-plane" press="onSendMessage" type="Emphasized"/>
+            </Toolbar>
+        </footer>
+    </Page>
+</mvc:View>
