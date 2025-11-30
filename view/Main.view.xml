@@ -1,0 +1,37 @@
+<mvc:View
+    controllerName="com.example.chat.controller.Main"
+    xmlns:l="sap.ui.layout"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns="sap.m">
+    
+    <IconTabBar
+        id="mainTabBar"
+        class="sapUiResponsiveContentPadding"
+        expandable="false"
+        selectedKey="chat">
+        
+        <items>
+            <IconTabFilter
+                id="chatTab"
+                key="chat"
+                text="Chat"
+                icon="sap-icon://chat">
+                <content>
+                    <core:Fragment fragmentName="com.example.chat.fragments.Chat" type="XML" />
+                </content>
+            </IconTabFilter>
+            
+            <IconTabFilter
+                id="testTab"
+                key="test"
+                text="Test"
+                icon="sap-icon://test">
+                <content>
+                    <!-- Пустая закладка -->
+                </content>
+            </IconTabFilter>
+        </items>
+    </IconTabBar>
+    
+</mvc:View>
