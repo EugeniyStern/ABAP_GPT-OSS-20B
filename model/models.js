@@ -6,110 +6,173 @@ sap.ui.define([
     return {
         createMessageModel: function() {
             var oModel = new JSONModel({
-                messages: [
-                    {
-                        sender: "Пользователь 1",
-                        text: "Привет! Это первое сообщение в чате.",
-                        timestamp: "2024-01-15 10:30",
-                        icon: "sap-icon://employee",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Пользователь 2",
-                        text: "Здравствуйте! Как дела?",
-                        timestamp: "2024-01-15 10:32",
-                        icon: "sap-icon://customer",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Пользователь 1",
-                        text: "Отлично, спасибо! А у вас?",
-                        timestamp: "2024-01-15 10:35",
-                        icon: "sap-icon://employee",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Система",
-                        text: "Добрый день! Рад всех видеть в этом чате.",
-                        timestamp: "2024-01-15 10:40",
-                        icon: "sap-icon://robot",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Пользователь 2",
-                        text: "Спасибо! Всё прекрасно, работаем над новым проектом.",
-                        timestamp: "2024-01-15 10:42",
-                        icon: "sap-icon://customer",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Пользователь 1",
-                        text: "Интересно! Можете рассказать подробнее?",
-                        timestamp: "2024-01-15 10:45",
-                        icon: "sap-icon://employee",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Пользователь 4",
-                        text: "Присоединяюсь к беседе. Какая тема обсуждается?",
-                        timestamp: "2024-01-15 10:50",
-                        icon: "sap-icon://group",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Система",
-                        text: "Обсуждаем новые проекты и планы на будущее.",
-                        timestamp: "2024-01-15 10:52",
-                        icon: "sap-icon://cloud",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Пользователь 2",
-                        text: "Да, это очень важная тема. Нужно скоординировать действия.",
-                        timestamp: "2024-01-15 10:55",
-                        icon: "sap-icon://customer",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    },
-                    {
-                        sender: "Пользователь 1",
-                        text: "Отлично! Давайте назначим встречу для обсуждения деталей.",
-                        timestamp: "2024-01-15 11:00",
-                        icon: "sap-icon://employee",
-                        Actions: [
-                            { Text: "Action 1", Key: "action1" },
-                            { Text: "Action 2", Key: "action2" }
-                        ]
-                    }
-                ]
+                messages: [],
+                sessionId: null,
+                sapLogon: null,
+                nickname: null,
+                sessions: []
             });
+            
+            // Устанавливаем endpoint для работы с SAP backend
+            oModel.setDefaultBindingMode(sap.ui.model.BindingMode.TwoWay);
+            
             return oModel;
+        },
+        
+        /**
+         * Загружает историю чата из SAP для указанной сессии
+         * Использует упрощенный подход - отправляет пустое сообщение с session_id
+         * для получения истории (если backend поддерживает)
+         * @param {string} sSessionId - ID сессии
+         * @param {string} sSapLogon - SAP логин пользователя
+         * @param {string} sNickname - Никнейм пользователя
+         * @returns {Promise} Promise с данными истории
+         */
+        loadChatHistory: function(sSessionId, sSapLogon, sNickname) {
+            return new Promise(function(resolve, reject) {
+                if (!sSessionId) {
+                    resolve([]);
+                    return;
+                }
+                
+                var sUrl = "/sap/yllm/session";
+                var oPayload = {
+                    sap_logon: sSapLogon || "",
+                    nickname: sNickname || "",
+                    session_id: sSessionId
+                };
+                
+                jQuery.ajax({
+                    url: sUrl,
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "action": "history"
+                    },
+                    data: JSON.stringify(oPayload),
+                    success: function(oResponse) {
+                        // oResponse должен быть массивом сообщений
+                        if (Array.isArray(oResponse)) {
+                            resolve(oResponse);
+                        } else {
+                            resolve([]);
+                        }
+                    },
+                    error: function(oError) {
+                        console.error("Ошибка загрузки истории:", oError);
+                        reject(oError);
+                    }
+                });
+            });
+        },
+        
+        /**
+         * Отправляет сообщение в SAP через endpoint /sap/yllm
+         * @param {string} sMessage - Текст сообщения
+         * @param {string} sSessionId - ID сессии (опционально)
+         * @param {string} sSapLogon - SAP логин пользователя
+         * @param {string} sNickname - Никнейм пользователя
+         * @returns {Promise} Promise с ответом от сервера
+         */
+        sendMessageToSAP: function(sMessage, sSessionId, sSapLogon, sNickname) {
+            return new Promise(function(resolve, reject) {
+                // Используем path /sap/yllm/chat/message для определения команды
+                // или можно использовать /sap/yllm с header/query параметром command
+                var sUrl = "/sap/yllm/chat/message";
+                var oPayload = {
+                    sap_logon: sSapLogon || "",
+                    nickname: sNickname || "",
+                    message: sMessage
+                };
+                
+                if (sSessionId) {
+                    oPayload.session_id = sSessionId;
+                }
+                
+                jQuery.ajax({
+                    url: sUrl,
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    data: JSON.stringify(oPayload),
+                    success: function(oResponse) {
+                        resolve(oResponse);
+                    },
+                    error: function(oError) {
+                        reject(oError);
+                    }
+                });
+            });
+        },
+        
+        /**
+         * Создает новую сессию в SAP
+         * @param {string} sSapLogon - SAP логин пользователя
+         * @param {string} sNickname - Никнейм пользователя
+         * @param {string} sSessionTitle - Заголовок сессии (опционально)
+         * @returns {Promise} Promise с ответом от сервера (session_id)
+         */
+        createSession: function(sSapLogon, sNickname, sSessionTitle) {
+            return new Promise(function(resolve, reject) {
+                var sUrl = "/sap/yllm/session";
+                var oPayload = {
+                    sap_logon: sSapLogon || "",
+                    nickname: sNickname || ""
+                };
+                
+                if (sSessionTitle) {
+                    oPayload.session_title = sSessionTitle;
+                }
+                
+                jQuery.ajax({
+                    url: sUrl,
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "action": "create"
+                    },
+                    data: JSON.stringify(oPayload),
+                    success: function(oResponse) {
+                        resolve(oResponse);
+                    },
+                    error: function(oError) {
+                        reject(oError);
+                    }
+                });
+            });
+        },
+        
+        /**
+         * Получает список сессий пользователя из SAP
+         * @param {string} sSapLogon - SAP логин пользователя
+         * @param {string} sNickname - Никнейм пользователя
+         * @returns {Promise} Promise с массивом сессий
+         */
+        getUserSessions: function(sSapLogon, sNickname) {
+            return new Promise(function(resolve, reject) {
+                var sUrl = "/sap/yllm/session";
+                var oPayload = {
+                    sap_logon: sSapLogon || "",
+                    nickname: sNickname || ""
+                };
+                
+                jQuery.ajax({
+                    url: sUrl,
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "action": "list"
+                    },
+                    data: JSON.stringify(oPayload),
+                    success: function(oResponse) {
+                        resolve(oResponse);
+                    },
+                    error: function(oError) {
+                        reject(oError);
+                    }
+                });
+            });
         }
     };
 });
